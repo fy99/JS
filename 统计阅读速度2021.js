@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         统计阅读速度2021
 // @namespace    http://tampermonkey.net/
-// @version      0.3
+// @version      1.1127
 // @description  try to take over the world!
 // @author       You
 // @match        https://www.aljazeera.com/*
@@ -12,25 +12,45 @@
 
 
 $(() => {
+    window.mainInterval = undefined
     let domain = document.domain;
     let selectionDict = {
         "www.reuters.com": ".StandardArticleBody_body>p",
-        "www.aljazeera.com":".wysiwyg--all-content>p",
-        'www.thinkchina.sg':".post-block p"
+        "www.aljazeera.com": ".wysiwyg--all-content>p",
+        'www.thinkchina.sg': ".post-block p"
     };
 
-    let date = new Date();
-    let time= date.getHours()+":"+date.getMinutes()
+    let jqBody = $("body")
 
 
-    let worldNumbers = $(selectionDict[domain]).text().split(" ").filter(i => {
-        if (i !== "") return true
-    }).length;
-    if (worldNumbers > 80) {
+    function main() {
+        let date = new Date();
+        let time = date.getHours() + ":" + date.getMinutes()
+
+        let worldNumbers = $(selectionDict[domain]).text().split(" ").filter(i => {
+            if (i !== "") return true
+        }).length;
+
+
+        if (worldNumbers < 80) {
+            console.log("失败" + f)
+            f += 1
+            if (f > 10) {
+                clearInterval(window.mainInterval)
+            }
+            return false;
+        } else {
+            clearInterval(window.mainInterval)
+            console.log("成功")
+
+        }
+
         let minute = 0;
-        let html = $(`<div>开始:${time} 总数:${worldNumbers} </div>`);
+        let htmlInner = $(`<span>开始:${time} 总数:${worldNumbers} </span>`);
+        let html = $("<div></div>");
+        html.append(htmlInner);
         let speedHtml = $(`<span></span>`);
-        html.append(speedHtml);
+        htmlInner.append(speedHtml);
         let css = " z-index:10;" +
             "width:fit-content;" +
             "height:fit-content;" +
@@ -45,14 +65,14 @@ $(() => {
 
         function clock() {
             minute += 0.1;
-            let minuteStr="用时:"+minute.toFixed(1)
+            let minuteStr = "用时:" + minute.toFixed(1)
             let speed = worldNumbers / minute;
             if (speed > 500) {
                 speedHtml.html(minuteStr);
             } else {
                 if (speed < 40) {
                     clearInterval(interval);
-                    running=false
+                    running = false
                     html.css("background", "#888888");
                 }
                 speedHtml.html(`${minuteStr} 速度:${speed.toPrecision(3)} `);
@@ -62,10 +82,10 @@ $(() => {
 
         let running = true;
 
-        $("body").append(html);
+        jqBody.append(html);
 
         interval = setInterval(clock, 6000);
-        html.click(() => {
+        htmlInner.click(() => {
             if (running) {
                 clearInterval(interval);
                 html.css("background", "#888888");
@@ -80,6 +100,28 @@ $(() => {
             }
 
         })
+
+        if (domain === "www.aljazeera.com") {
+            let button = $("<button>重置</button>");
+            button.click(() => {
+                htmlInner.remove()
+                f=0
+                if (main() === false) {
+                    window.mainInterval = setInterval(main, 5000);
+                }
+            });
+            html.append(button)
+
+
+        }
+
+
+        return true
+    }
+
+    let f = 0
+    if (main() === false) {
+        window.mainInterval = setInterval(main, 5000);
     }
 
 
