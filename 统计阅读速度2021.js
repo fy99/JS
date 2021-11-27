@@ -1,5 +1,4 @@
 // ==UserScript==
-// @license MIT
 // @name         统计阅读速度2021
 // @namespace    http://tampermonkey.net/
 // @version      0.3
