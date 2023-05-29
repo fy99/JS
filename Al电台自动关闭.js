@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         定时关闭
 // @namespace    http://tampermonkey.net/
-// @version      0.1
+// @version      0.2
 // @description  try to take over the world!
 // @author       You
 // @match        https://listen.aljazeera.com/english/livestream
@@ -24,7 +24,7 @@ countdownLabel.style.zIndex = '9999';
 document.body.appendChild(countdownLabel);
 
 // 定义倒计时时间（单位：秒）
-var countdownTime = 0.5 * 60; // 30分钟
+var countdownTime = 40 * 60; // 40分钟
 
 // 定义剩余时间的分钟数和秒数
 var remainingMinutes = Math.floor(countdownTime / 60);
@@ -37,8 +37,8 @@ function updateCountdownLabel() {
 
   // 如果秒数为负数，则将分钟数减一，并将秒数重置为 59
   if (remainingSeconds < 0) {
-    remainingMinutes--;
-    remainingSeconds = 59;
+      remainingMinutes--;
+      remainingSeconds = 59;
 
       // 如果分钟数为负数，则执行后退操作
       if (remainingMinutes < 0) {
@@ -48,7 +48,10 @@ function updateCountdownLabel() {
           while (body.firstChild) {
               body.removeChild(body.firstChild);
           }
-          clearInterval(timer);
+          clearInterval(window.timerInterval);
+
+          // 重新添加删除的标签元素到页面中
+          document.body.appendChild(countdownLabel);
       }
   }
 
@@ -58,7 +61,7 @@ function updateCountdownLabel() {
 }
 
 // 每秒钟更新一次倒计时标签的内容
-var timer=setInterval(updateCountdownLabel, 1000);
+window.timerInterval=setInterval(updateCountdownLabel, 1000);
 
 // 更新倒计时标签的内容
 updateCountdownLabel();
